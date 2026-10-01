@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSONNook — Your JSON Workspace</title>
+    <meta name="description" content="Format, validate, convert, diff, and query JSON — all in one place. 100% client-side, private, free.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪺</text></svg>">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <style>
+        :root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--text:#c9d1d9;--text2:#8b949e;--accent:#58a6ff;--accent2:#79b8ff;--success:#3fb950;--warning:#d29922;--error:#f85149;--border:#30363d;--shadow:rgba(0,0,0,.3);--radius:8px;--transition:.2s ease}
+        [data-theme=light]{--bg:#fff;--bg2:#f6f8fa;--bg3:#eaeef2;--text:#1f2328;--text2:#59636e;--accent:#0969da;--accent2:#0550ae;--success:#1a7f37;--warning:#9a6700;--error:#d1242f;--border:#d1d9e0;--shadow:rgba(0,0,0,.1)}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+        .header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+        .logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;color:var(--text);text-decoration:none}
+        .logo span{color:var(--accent)}
+        .header-actions{display:flex;gap:8px;align-items:center}
+        .btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;transition:all var(--transition);display:flex;align-items:center;gap:6px}
+        .btn:hover{background:var(--border)}
+        .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+        .btn-primary:hover{background:var(--accent2)}
+        .btn-sm{padding:4px 8px;font-size:12px}
+        .main{display:flex;flex:1;overflow:hidden}
+        .sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:12px;overflow-y:auto;flex-shrink:0}
+        .sidebar-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;padding:0 8px}
+        .nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;transition:all var(--transition);font-size:14px;color:var(--text);margin-bottom:2px}
+        .nav-item:hover{background:var(--bg3)}
+        .nav-item.active{background:var(--accent);color:#fff}
+        .nav-item .icon{font-size:16px}
+        .content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .toolbar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+        .toolbar-separator{width:1px;height:24px;background:var(--border);margin:0 4px}
+        .editor-area{flex:1;display:flex;overflow:hidden}
+        .editor-pane{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .editor-pane:first-child{border-right:1px solid var(--border)}
+        .page-section.active .editor-area{min-height:420px}
+        .page-section textarea{min-height:380px}
+        .section-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px}
+        .row-flex{display:flex;gap:8px;margin-bottom:8px}
+        .row-flex input{flex:1}
+        .stack-col{padding:16px;display:flex;flex-direction:column;gap:16px;max-width:720px}
+        .pane-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text2)}
+        .pane-content{flex:1;overflow:auto;padding:16px}
+        textarea{width:100%;height:100%;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:2}
+        textarea:focus{border-color:var(--accent)}
+        .tree-view{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.8}
+        .tree-node{padding-left:20px;position:relative}
+        .tree-toggle{cursor:pointer;user-select:none;display:inline-block;width:16px;text-align:center;color:var(--text2)}
+        .tree-key{color:var(--accent)}
+        .tree-string{color:var(--success)}
+        .tree-number{color:var(--warning)}
+        .tree-boolean{color:#ff7b72}
+        .tree-null{color:var(--text2);font-style:italic}
+        .tree-bracket{color:var(--text2)}
+        .tree-children{display:block}
+        .tree-children.collapsed{display:none}
+        .status-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:var(--bg2);border-top:1px solid var(--border);font-size:12px;color:var(--text2);flex-shrink:0}
+        .status-left,.status-right{display:flex;gap:16px;align-items:center}
+        .status-item{display:flex;align-items:center;gap:4px}
+        .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+        .status-dot.valid{background:var(--success)}
+        .status-dot.invalid{background:var(--error)}
+        .toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:8px}
+        .toast{padding:12px 16px;border-radius:var(--radius);color:#fff;font-size:14px;animation:slideIn .3s ease;box-shadow:0 4px 12px var(--shadow);max-width:350px}
+        .toast-success{background:var(--success)}
+        .toast-error{background:var(--error)}
+        .toast-info{background:var(--accent)}
+        @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+        .diff-view{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;line-height:1.6}
+        .diff-line{padding:2px 8px;white-space:pre-wrap;word-break:break-all}
+        .diff-added{background:rgba(63,185,80,.15);color:var(--success)}
+        .diff-removed{background:rgba(248,81,73,.15);color:var(--error)}
+        .diff-unchanged{color:var(--text2)}
+        .jsonpath-result{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-top:12px}
+        .schema-output{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:13px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;white-space:pre-wrap}
+        .snippet-list{display:flex;flex-direction:column;gap:8px}
+        .snippet-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all var(--transition)}
+        .snippet-item:hover{border-color:var(--accent)}
+        .snippet-name{font-weight:500;font-size:14px}
+        .snippet-date{font-size:12px;color:var(--text2)}
+        .snippet-actions{display:flex;gap:4px}
+        .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text2);text-align:center;padding:40px}
+        .empty-state .icon{font-size:48px;margin-bottom:16px}
+        .empty-state h3{margin-bottom:8px;color:var(--text)}
+        @media(max-width:768px){.sidebar{display:none}.editor-area{flex-direction:column}.editor-pane:first-child{border-right:none;border-bottom:1px solid var(--border)}}
+        ::-webkit-scrollbar{width:8px;height:8px}
+        ::-webkit-scrollbar-track{background:var(--bg)}
+        ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+        ::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+        select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);font-size:13px;cursor:pointer}
+        input[type=text],input[type=number]{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);font-size:13px;outline:none}
+        input:focus{border-color:var(--accent)}
+        label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+        .hidden{display:none!important}
+        .page-section{display:none;flex:1;overflow:auto;padding:20px}
+        .page-section.active{display:block}
+        .converter-container{display:flex;flex-direction:column;gap:16px;height:100%}
+        .converter-panes{display:flex;gap:16px;flex:1;overflow:hidden}
+        .converter-pane{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .converter-pane:first-child{border-right:1px solid var(--border);padding-right:16px}
+        .converter-textarea{flex:1;min-height:200px}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <a class="logo" href="#">🪺 JSON<span>Nook</span></a>
+        <div class="header-actions">
+            <button class="btn btn-sm" id="themeToggle" title="Toggle theme">🌙</button>
+        </div>
+    </header>
+    <div class="main">
+        <nav class="sidebar">
+            <div class="sidebar-title">Tools</div>
+            <div class="nav-item active" data-tool="formatter"><span class="icon">✨</span> Formatter</div>
+            <div class="nav-item" data-tool="tree"><span class="icon">🌳</span> Tree View</div>
+            <div class="nav-item" data-tool="converter"><span class="icon">🔄</span> Converter</div>
+            <div class="nav-item" data-tool="diff"><span class="icon">📋</span> Diff</div>
+            <div class="nav-item" data-tool="jsonpath"><span class="icon">🔍</span> JSON Path</div>
+            <div class="nav-item" data-tool="schema"><span class="icon">📐</span> Schema</div>
+            <div class="sidebar-title" style="margin-top:20px;">More Tools</div>
+            <div class="nav-item" data-tool="jwt"><span class="icon">🎫</span> JWT Decoder</div>
+            <div class="nav-item" data-tool="base64"><span class="icon">🔣</span> Base64</div>
+            <div class="nav-item" data-tool="hash"><span class="icon">🔐</span> Hash Generator</div>
+            <div class="nav-item" data-tool="uuid"><span class="icon">🆔</span> UUID Generator</div>
+            <div class="nav-item" data-tool="timestamp"><span class="icon">⏰</span> Timestamp</div>
+            <div class="sidebar-title" style="margin-top:20px;">Workspace</div>
+            <div class="nav-item" data-tool="snippets"><span class="icon">💾</span> Saved Snippets</div>
+        </nav>
+        <div class="content">
+            <div class="page-section active" id="page-formatter">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="formatBtn">✨ Format</button>
+                    <button class="btn" id="minifyBtn">📦 Minify</button>
+                    <button class="btn" id="validateBtn">✅ Validate</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="sortKeysBtn">🔤 Sort Keys</button>
+                    <button class="btn" id="escapeBtn">🔒 Escape</button>
+                    <button class="btn" id="unescapeBtn">🔓 Unescape</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="copyBtn">📋 Copy</button>
+                    <button class="btn" id="downloadBtn">💾 Download</button>
+                    <button class="btn" id="clearBtn">🗑️ Clear</button>
+                    <button class="btn" id="sampleBtn">📄 Sample</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Input</span><span id="inputStats">0 chars</span></div>
+                        <div class="pane-content"><textarea id="inputEditor" placeholder="Paste your JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Output</span><span id="outputStats">0 chars</span></div>
+                        <div class="pane-content"><textarea id="outputEditor" placeholder="Formatted JSON will appear here..." readonly spellcheck="false"></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-tree">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="treeRefreshBtn">🌳 Generate Tree</button>
+                    <button class="btn" id="expandAllBtn">📂 Expand All</button>
+                    <button class="btn" id="collapseAllBtn">📁 Collapse All</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="treeCopyBtn">📋 Copy</button>
+                    <button class="btn" id="treeDownloadBtn">💾 Download</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>JSON Input</span></div>
+                        <div class="pane-content"><textarea id="treeInput" placeholder="Paste your JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Tree View</span></div>
+                        <div class="pane-content"><div class="tree-view" id="treeOutput"><div class="empty-state"><div class="icon">🌳</div><h3>No Tree Yet</h3><p>Paste JSON and click "Generate Tree"</p></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-converter">
+                <div class="toolbar">
+                    <select id="convertDirection">
+                        <option value="json-to-yaml">JSON → YAML</option>
+                        <option value="yaml-to-json">YAML → JSON</option>
+                        <option value="json-to-csv">JSON → CSV</option>
+                        <option value="csv-to-json">CSV → JSON</option>
+                        <option value="json-to-toml">JSON → TOML</option>
+                        <option value="toml-to-json">TOML → JSON</option>
+                    </select>
+                    <button class="btn btn-primary" id="convertBtn">🔄 Convert</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="convertCopyBtn">📋 Copy</button>
+                    <button class="btn" id="convertDownloadBtn">💾 Download</button>
+                </div>
+                <div class="converter-container">
+                    <div class="converter-panes">
+                        <div class="converter-pane">
+                            <div class="pane-header"><span id="convertInputLabel">JSON Input</span></div>
+                            <textarea id="convertInput" class="converter-textarea" placeholder="Paste your JSON here..." spellcheck="false"></textarea>
+                        </div>
+                        <div class="converter-pane">
+                            <div class="pane-header"><span id="convertOutputLabel">YAML Output</span></div>
+                            <textarea id="convertOutput" class="converter-textarea" placeholder="Converted output will appear here..." readonly spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-diff">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="diffBtn">📋 Compare</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="diffSwapBtn">🔄 Swap</button>
+                    <button class="btn" id="diffClearBtn">🗑️ Clear</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Original JSON</span></div>
+                        <div class="pane-content"><textarea id="diffInputA" placeholder="Paste original JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Modified JSON</span></div>
+                        <div class="pane-content"><textarea id="diffInputB" placeholder="Paste modified JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                </div>
+                <div class="pane-header" style="border-top:1px solid var(--border)"><span>Diff Result</span></div>
+                <div class="pane-content" style="max-height:200px;overflow-y:auto"><div class="diff-view" id="diffOutput"><div class="empty-state"><div class="icon">📋</div><h3>No Diff Yet</h3><p>Paste two JSONs and click "Compare"</p></div></div></div>
+            </div>
+            <div class="page-section" id="page-jsonpath">
+                <div class="toolbar">
+                    <input type="text" id="jsonpathInput" placeholder="$.store.book[*].author" style="width:300px">
+                    <button class="btn btn-primary" id="jsonpathBtn">🔍 Query</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="jsonpathCopyBtn">📋 Copy</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>JSON Input</span></div>
+                        <div class="pane-content"><textarea id="jsonpathJson" placeholder="Paste your JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Query Result</span></div>
+                        <div class="pane-content"><div class="jsonpath-result" id="jsonpathOutput"><div class="empty-state"><div class="icon">🔍</div><h3>No Query Yet</h3><p>Enter a JSON Path expression and click "Query"</p></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-schema">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="schemaBtn">📐 Generate Schema</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="schemaCopyBtn">📋 Copy</button>
+                    <button class="btn" id="schemaDownloadBtn">💾 Download</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>JSON Input</span></div>
+                        <div class="pane-content"><textarea id="schemaInput" placeholder="Paste your JSON here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>JSON Schema</span></div>
+                        <div class="pane-content"><div class="schema-output" id="schemaOutput"><div class="empty-state"><div class="icon">📐</div><h3>No Schema Yet</h3><p>Paste JSON and click "Generate Schema"</p></div></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-jwt">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="jwtDecodeBtn">🎫 Decode</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="jwtSampleBtn">📄 Sample</button>
+                    <button class="btn" id="jwtClearBtn">🗑️ Clear</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>JWT Token</span></div>
+                        <div class="pane-content"><textarea id="jwtInput" placeholder="Paste your JWT here (header.payload.signature)..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Decoded</span></div>
+                        <div class="pane-content">
+                            <div class="section-label">HEADER</div>
+                            <div class="schema-output" id="jwtHeader" style="margin-bottom:12px;">—</div>
+                            <div class="section-label">PAYLOAD</div>
+                            <div class="schema-output" id="jwtPayload" style="margin-bottom:12px;">—</div>
+                            <div class="section-label">INFO</div>
+                            <div class="jsonpath-result" id="jwtInfo" style="margin-top:0;">—</div>
+                            <p style="font-size:12px;color:var(--text2);margin-top:12px;">⚠️ Signatures are decoded, not verified, in the browser. Never paste production secrets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-base64">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="b64EncodeBtn">🔣 Encode →</button>
+                    <button class="btn btn-primary" id="b64DecodeBtn">← Decode</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="b64CopyBtn">📋 Copy Result</button>
+                    <button class="btn" id="b64ClearBtn">🗑️ Clear</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Plain Text</span></div>
+                        <div class="pane-content"><textarea id="b64Text" placeholder="Plain text here..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Base64</span></div>
+                        <div class="pane-content"><textarea id="b64Output" placeholder="Base64 here..." spellcheck="false"></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-hash">
+                <div class="toolbar">
+                    <select id="hashAlgo">
+                        <option value="SHA-256">SHA-256</option>
+                        <option value="SHA-1">SHA-1</option>
+                        <option value="SHA-384">SHA-384</option>
+                        <option value="SHA-512">SHA-512</option>
+                    </select>
+                    <button class="btn btn-primary" id="hashBtn">🔐 Hash</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="hashCopyBtn">📋 Copy</button>
+                </div>
+                <div class="editor-area">
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Input Text</span></div>
+                        <div class="pane-content"><textarea id="hashInput" placeholder="Text to hash..." spellcheck="false"></textarea></div>
+                    </div>
+                    <div class="editor-pane">
+                        <div class="pane-header"><span>Hash (hex)</span></div>
+                        <div class="pane-content"><textarea id="hashOutput" placeholder="Hash will appear here..." readonly spellcheck="false"></textarea></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-uuid">
+                <div class="toolbar">
+                    <label>Count <input type="number" id="uuidCount" value="5" min="1" max="100" style="width:70px"></label>
+                    <button class="btn btn-primary" id="uuidBtn">🆔 Generate</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="uuidCopyBtn">📋 Copy</button>
+                </div>
+                <div style="padding:16px;">
+                    <textarea id="uuidOutput" placeholder="UUIDs will appear here..." readonly spellcheck="false"></textarea>
+                </div>
+            </div>
+            <div class="page-section" id="page-timestamp">
+                <div class="toolbar">
+                    <button class="btn btn-primary" id="tsNowBtn">⏰ Current Time</button>
+                </div>
+                <div class="stack-col">
+                    <div>
+                        <div class="section-label">NOW</div>
+                        <div class="jsonpath-result" id="tsNowOutput" style="margin-top:0;">Click "Current Time"</div>
+                    </div>
+                    <div>
+                        <div class="section-label">UNIX → DATE</div>
+                        <div class="row-flex">
+                            <input type="text" id="tsUnixInput" placeholder="e.g. 1756684800">
+                            <button class="btn" id="tsUnixBtn">Convert →</button>
+                        </div>
+                        <div class="jsonpath-result" id="tsUnixOutput" style="margin-top:0;">—</div>
+                    </div>
+                    <div>
+                        <div class="section-label">DATE → UNIX</div>
+                        <div class="row-flex">
+                            <input type="text" id="tsDateInput" placeholder="e.g. 2025-09-01T00:00:00Z">
+                            <button class="btn" id="tsDateBtn">Convert →</button>
+                        </div>
+                        <div class="jsonpath-result" id="tsDateOutput" style="margin-top:0;">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-section" id="page-snippets">
+                <div class="toolbar">
+                    <input type="text" id="snippetName" placeholder="Snippet name..." style="width:200px">
+                    <button class="btn btn-primary" id="saveSnippetBtn">💾 Save Current</button>
+                    <div class="toolbar-separator"></div>
+                    <button class="btn" id="clearAllSnippetsBtn">🗑️ Clear All</button>
+                </div>
+                <div class="snippet-list" id="snippetList"><div class="empty-state"><div class="icon">💾</div><h3>No Saved Snippets</h3><p>Save your current JSON to access it later</p></div></div>
+            </div>
+        </div>
+    </div>
+    <footer class="status-bar">
+        <div class="status-left">
+            <div class="status-item"><span class="status-dot" id="statusDot"></span><span id="statusText">Ready</span></div>
+            <div class="status-item"><span id="lineCount">Line: 0</span></div>
+            <div class="status-item"><span id="charCount">Chars: 0</span></div>
+        </div>
+        <div class="status-right">
+            <div class="status-item"><span>🔒 100% Client-Side</span></div>
+            <div class="status-item"><span>🪺 JSONNook v1.0</span></div>
+        </div>
+    </footer>
+    <div class="toast-container" id="toastContainer"></div>
+    <script>
+        // === State ===
+        let currentTool = 'formatter';
+        let savedSnippets = JSON.parse(localStorage.getItem('jsonnook_snippets') || '[]');
+
+        // === DOM Elements ===
+        const $ = id => document.getElementById(id);
+        const inputEditor = $('inputEditor');
+        const outputEditor = $('outputEditor');
+        const statusDot = $('statusDot');
+        const statusText = $('statusText');
+        const lineCount = $('lineCount');
+        const charCount = $('charCount');
+        const inputStats = $('inputStats');
+        const outputStats = $('outputStats');
+
+        // === Toast ===
+        function showToast(message, type = 'info') {
+            const container = $('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut .3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // === Theme ===
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next);
+            $('themeToggle').textContent = next === 'light' ? '☀️' : '🌙';
+            localStorage.setItem('jsonnook_theme', next);
+        }
+        $('themeToggle').addEventListener('click', toggleTheme);
+        (function initTheme() {
+            const saved = localStorage.getItem('jsonnook_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            $('themeToggle').textContent = saved === 'light' ? '☀️' : '🌙';
+        })();
+
+        // === Navigation ===
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                currentTool = item.dataset.tool;
+                document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+                $('page-' + currentTool).classList.add('active');
+                updateStats();
+            });
+        });
+
+        // === Status ===
+        function setStatus(text, valid) {
+            statusText.textContent = text;
+            statusDot.className = 'status-dot ' + (valid ? 'valid' : 'invalid');
+        }
+
+        function updateStats() {
+            const text = inputEditor.value;
+            const lines = text ? text.split('\n').length : 0;
+            const chars = text.length;
+            lineCount.textContent = 'Line: ' + lines;
+            charCount.textContent = 'Chars: ' + chars;
+            inputStats.textContent = chars + ' chars';
+            outputStats.textContent = outputEditor.value.length + ' chars';
+        }
+
+        // === Formatter ===
+        function formatJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const formatted = JSON.stringify(parsed, null, 2);
+                outputEditor.value = formatted;
+                setStatus('Valid JSON', true);
+                showToast('JSON formatted successfully', 'success');
+                updateStats();
+            } catch (e) {
+                setStatus('Invalid JSON', false);
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function minifyJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const minified = JSON.stringify(parsed);
+                outputEditor.value = minified;
+                setStatus('Valid JSON', true);
+                showToast('JSON minified successfully', 'success');
+                updateStats();
+            } catch (e) {
+                setStatus('Invalid JSON', false);
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function validateJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                JSON.parse(input);
+                setStatus('Valid JSON', true);
+                showToast('JSON is valid!', 'success');
+            } catch (e) {
+                setStatus('Invalid JSON', false);
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function sortKeysJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const sorted = sortKeysRecursive(parsed);
+                const formatted = JSON.stringify(sorted, null, 2);
+                outputEditor.value = formatted;
+                setStatus('Valid JSON', true);
+                showToast('Keys sorted successfully', 'success');
+                updateStats();
+            } catch (e) {
+                setStatus('Invalid JSON', false);
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function sortKeysRecursive(obj) {
+            if (Array.isArray(obj)) return obj.map(sortKeysRecursive);
+            if (obj !== null && typeof obj === 'object') {
+                return Object.keys(obj).sort().reduce((result, key) => {
+                    result[key] = sortKeysRecursive(obj[key]);
+                    return result;
+                }, {});
+            }
+            return obj;
+        }
+
+        function escapeJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const escaped = JSON.stringify(parsed).replace(/"/g, '\\"');
+                outputEditor.value = escaped;
+                showToast('JSON escaped successfully', 'success');
+                updateStats();
+            } catch (e) {
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function unescapeJSON() {
+            const input = inputEditor.value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const unescaped = input.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                const parsed = JSON.parse(unescaped);
+                const formatted = JSON.stringify(parsed, null, 2);
+                outputEditor.value = formatted;
+                showToast('JSON unescaped successfully', 'success');
+                updateStats();
+            } catch (e) {
+                showToast('Invalid escaped JSON: ' + e.message, 'error');
+            }
+        }
+
+        $('formatBtn').addEventListener('click', formatJSON);
+        $('minifyBtn').addEventListener('click', minifyJSON);
+        $('validateBtn').addEventListener('click', validateJSON);
+        $('sortKeysBtn').addEventListener('click', sortKeysJSON);
+        $('escapeBtn').addEventListener('click', escapeJSON);
+        $('unescapeBtn').addEventListener('click', unescapeJSON);
+
+        // === Copy / Download / Clear / Sample ===
+        $('copyBtn').addEventListener('click', () => {
+            if (!outputEditor.value) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText(outputEditor.value).then(() => showToast('Copied to clipboard', 'success'));
+        });
+
+        $('downloadBtn').addEventListener('click', () => {
+            if (!outputEditor.value) { showToast('Nothing to download', 'error'); return; }
+            const blob = new Blob([outputEditor.value], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'jsonnook-output.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Downloaded successfully', 'success');
+        });
+
+        $('clearBtn').addEventListener('click', () => {
+            inputEditor.value = '';
+            outputEditor.value = '';
+            setStatus('Ready', true);
+            updateStats();
+        });
+
+        $('sampleBtn').addEventListener('click', () => {
+            const sample = {
+                "name": "JSONNook",
+                "version": "1.0.0",
+                "description": "Your JSON workspace",
+                "features": ["format", "validate", "tree", "convert", "diff", "jsonpath", "schema"],
+                "author": "JSONNook Team",
+                "license": "MIT",
+                "repository": { "type": "git", "url": "https://github.com/jsonnook/jsonnook" },
+                "keywords": ["json", "formatter", "validator", "converter", "diff"],
+                "dependencies": {},
+                "devDependencies": {},
+                "scripts": { "start": "http-server", "test": "jest" },
+                "private": false
+            };
+            inputEditor.value = JSON.stringify(sample, null, 2);
+            updateStats();
+            showToast('Sample JSON loaded', 'info');
+        });
+
+        // === Tree View ===
+        function generateTree() {
+            const input = $('treeInput').value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const treeHTML = buildTree(parsed, true);
+                $('treeOutput').innerHTML = treeHTML;
+                showToast('Tree generated', 'success');
+            } catch (e) {
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function buildTree(obj, isRoot = false) {
+            if (obj === null) return '<span class="tree-null">null</span>';
+            if (typeof obj === 'string') return '<span class="tree-string">"' + escapeHtml(obj) + '"</span>';
+            if (typeof obj === 'number') return '<span class="tree-number">' + obj + '</span>';
+            if (typeof obj === 'boolean') return '<span class="tree-boolean">' + obj + '</span>';
+            if (Array.isArray(obj)) {
+                if (obj.length === 0) return '<span class="tree-bracket">[]</span>';
+                let html = '<span class="tree-bracket">[</span><span class="tree-toggle">▼</span><div class="tree-children">';
+                obj.forEach((item, i) => {
+                    html += '<div class="tree-node">' + buildTree(item) + (i < obj.length - 1 ? '<span class="tree-bracket">,</span>' : '') + '</div>';
+                });
+                html += '</div><span class="tree-bracket">]</span>';
+                return html;
+            }
+            if (typeof obj === 'object') {
+                const keys = Object.keys(obj);
+                if (keys.length === 0) return '<span class="tree-bracket">{}</span>';
+                let html = '<span class="tree-bracket">{</span><span class="tree-toggle">▼</span><div class="tree-children">';
+                keys.forEach((key, i) => {
+                    html += '<div class="tree-node"><span class="tree-key">"' + escapeHtml(key) + '"</span><span class="tree-bracket">: </span>' + buildTree(obj[key]) + (i < keys.length - 1 ? '<span class="tree-bracket">,</span>' : '') + '</div>';
+                });
+                html += '</div><span class="tree-bracket">}</span>';
+                return html;
+            }
+            return '<span class="tree-null">undefined</span>';
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        $('treeRefreshBtn').addEventListener('click', generateTree);
+        $('expandAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.tree-children').forEach(el => el.classList.remove('collapsed'));
+            document.querySelectorAll('.tree-toggle').forEach(el => el.textContent = '▼');
+        });
+        $('collapseAllBtn').addEventListener('click', () => {
+            document.querySelectorAll('.tree-children').forEach(el => el.classList.add('collapsed'));
+            document.querySelectorAll('.tree-toggle').forEach(el => el.textContent = '▶');
+        });
+        $('treeCopyBtn').addEventListener('click', () => {
+            const input = $('treeInput').value.trim();
+            if (!input) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText(input).then(() => showToast('Copied to clipboard', 'success'));
+        });
+        $('treeDownloadBtn').addEventListener('click', () => {
+            const input = $('treeInput').value.trim();
+            if (!input) { showToast('Nothing to download', 'error'); return; }
+            const blob = new Blob([input], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'jsonnook-tree.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Tree toggle click delegation
+        $('treeOutput').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tree-toggle')) {
+                const children = e.target.nextElementSibling;
+                if (children && children.classList.contains('tree-children')) {
+                    children.classList.toggle('collapsed');
+                    e.target.textContent = children.classList.contains('collapsed') ? '▶' : '▼';
+                }
+            }
+        });
+
+        // === Converter ===
+        function convertJSON() {
+            const direction = $('convertDirection').value;
+            const input = $('convertInput').value.trim();
+            if (!input) { showToast('Please enter data first', 'error'); return; }
+            try {
+                let result = '';
+                if (direction === 'json-to-yaml') {
+                    const parsed = JSON.parse(input);
+                    result = jsonToYAML(parsed);
+                    $('convertInputLabel').textContent = 'JSON Input';
+                    $('convertOutputLabel').textContent = 'YAML Output';
+                } else if (direction === 'yaml-to-json') {
+                    const parsed = yamlToJSON(input);
+                    result = JSON.stringify(parsed, null, 2);
+                    $('convertInputLabel').textContent = 'YAML Input';
+                    $('convertOutputLabel').textContent = 'JSON Output';
+                } else if (direction === 'json-to-csv') {
+                    const parsed = JSON.parse(input);
+                    result = jsonToCSV(parsed);
+                    $('convertInputLabel').textContent = 'JSON Input';
+                    $('convertOutputLabel').textContent = 'CSV Output';
+                } else if (direction === 'csv-to-json') {
+                    const parsed = csvToJSON(input);
+                    result = JSON.stringify(parsed, null, 2);
+                    $('convertInputLabel').textContent = 'CSV Input';
+                    $('convertOutputLabel').textContent = 'JSON Output';
+                } else if (direction === 'json-to-toml') {
+                    const parsed = JSON.parse(input);
+                    result = jsonToTOML(parsed).trim() + '\n';
+                    $('convertInputLabel').textContent = 'JSON Input';
+                    $('convertOutputLabel').textContent = 'TOML Output';
+                } else if (direction === 'toml-to-json') {
+                    const parsed = parseTOML(input);
+                    result = JSON.stringify(parsed, null, 2);
+                    $('convertInputLabel').textContent = 'TOML Input';
+                    $('convertOutputLabel').textContent = 'JSON Output';
+                }
+                $('convertOutput').value = result;
+                showToast('Converted successfully', 'success');
+            } catch (e) {
+                showToast('Conversion error: ' + e.message, 'error');
+            }
+        }
+
+        function jsonToYAML(obj, indent = 0) {
+            const spaces = '  '.repeat(indent);
+            if (obj === null) return 'null';
+            if (typeof obj === 'string') return obj.includes('\n') ? '|\n' + spaces + obj.split('\n').map(l => '  ' + l).join('\n') : obj;
+            if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+            if (Array.isArray(obj)) {
+                if (obj.length === 0) return '[]';
+                return obj.map(item => {
+                    if (typeof item === 'object' && item !== null) {
+                        const yaml = jsonToYAML(item, indent + 1);
+                        return spaces + '- ' + yaml.trim();
+                    }
+                    return spaces + '- ' + jsonToYAML(item, 0);
+                }).join('\n');
+            }
+            if (typeof obj === 'object') {
+                const keys = Object.keys(obj);
+                if (keys.length === 0) return '{}';
+                return keys.map(key => {
+                    const value = obj[key];
+                    if (typeof value === 'object' && value !== null) {
+                        return spaces + key + ':\n' + jsonToYAML(value, indent + 1);
+                    }
+                    return spaces + key + ': ' + jsonToYAML(value, 0);
+                }).join('\n');
+            }
+            return String(obj);
+        }
+
+        function yamlToJSON(yaml) {
+            // Simple YAML parser for basic structures
+            const lines = yaml.split('\n');
+            const result = parseYAMLLines(lines, 0).value;
+            return result;
+        }
+
+        function parseYAMLLines(lines, startIndex) {
+            let i = startIndex;
+            const result = {};
+            let isArray = false;
+            // Check if it's an array
+            while (i < lines.length) {
+                const line = lines[i];
+                if (line.trim() === '' || line.trim().startsWith('#')) { i++; continue; }
+                if (line.trim().startsWith('- ')) { isArray = true; break; }
+                if (line.includes(':')) { isArray = false; break; }
+                break;
+            }
+            if (isArray) {
+                const arr = [];
+                while (i < lines.length) {
+                    const line = lines[i];
+                    if (line.trim() === '' || line.trim().startsWith('#')) { i++; continue; }
+                    if (!line.trim().startsWith('- ')) break;
+                    const item = line.trim().substring(2);
+                    if (item.includes(':')) {
+                        // Object in array
+                        const objLines = [item];
+                        i++;
+                        while (i < lines.length && (lines[i].startsWith('  ') || lines[i].startsWith('\t')) && !lines[i].trim().startsWith('- ')) {
+                            objLines.push(lines[i]);
+                            i++;
+                        }
+                        arr.push(yamlToJSON(objLines.join('\n')));
+                    } else {
+                        arr.push(parseYAMLValue(item));
+                        i++;
+                    }
+                }
+                return { value: arr, nextIndex: i };
+            }
+            while (i < lines.length) {
+                const line = lines[i];
+                if (line.trim() === '' || line.trim().startsWith('#')) { i++; continue; }
+                const colonIndex = line.indexOf(':');
+                if (colonIndex === -1) { i++; continue; }
+                const key = line.substring(0, colonIndex).trim();
+                const value = line.substring(colonIndex + 1).trim();
+                if (value === '') {
+                    // Check if next line is indented (object/array)
+                    const nextLine = lines[i + 1];
+                    if (nextLine && (nextLine.startsWith('  ') || nextLine.startsWith('\t') || nextLine.trim().startsWith('- '))) {
+                        const childResult = parseYAMLLines(lines, i + 1);
+                        result[key] = childResult.value;
+                        i = childResult.nextIndex;
+                    } else {
+                        result[key] = null;
+                        i++;
+                    }
+                } else {
+                    result[key] = parseYAMLValue(value);
+                    i++;
+                }
+            }
+            return { value: result, nextIndex: i };
+        }
+
+        function parseYAMLValue(value) {
+            if (value === 'null' || value === '~') return null;
+            if (value === 'true') return true;
+            if (value === 'false') return false;
+            if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1);
+            if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1);
+            if (!isNaN(value) && value !== '') return Number(value);
+            return value;
+        }
+
+        function jsonToCSV(json) {
+            if (!Array.isArray(json) || json.length === 0) return '';
+            const keys = Object.keys(json[0]);
+            const rows = [keys.join(',')];
+            json.forEach(item => {
+                rows.push(keys.map(key => {
+                    const val = item[key];
+                    if (val === null || val === undefined) return '';
+                    const str = String(val);
+                    return str.includes(',') || str.includes('"') || str.includes('\n') ? '"' + str.replace(/"/g, '""') + '"' : str;
+                }).join(','));
+            });
+            return rows.join('\n');
+        }
+
+        function csvToJSON(csv) {
+            const lines = csv.split('\n').filter(l => l.trim());
+            if (lines.length < 2) return [];
+            const keys = lines[0].split(',').map(k => k.trim());
+            return lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim());
+                const obj = {};
+                keys.forEach((key, i) => {
+                    obj[key] = values[i] || '';
+                });
+                return obj;
+            });
+        }
+
+        // === TOML (common subset: tables, key=value, strings, numbers, booleans, inline arrays/tables) ===
+        function tomlValue(v) {
+            if (v === null || v === undefined) return '""';
+            if (typeof v === 'string') return JSON.stringify(v);
+            if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+            if (Array.isArray(v)) return '[ ' + v.map(tomlValue).join(', ') + ' ]';
+            return '{ ' + Object.keys(v).map(k => k + ' = ' + tomlValue(v[k])).join(', ') + ' }';
+        }
+
+        function jsonToTOML(obj, prefix) {
+            prefix = prefix || '';
+            let out = '';
+            const tables = [];
+            for (const key in obj) {
+                const value = obj[key];
+                if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                    tables.push([key, value]);
+                } else {
+                    out += key + ' = ' + tomlValue(value) + '\n';
+                }
+            }
+            tables.forEach(([key, value]) => {
+                const name = prefix ? prefix + '.' + key : key;
+                out += '\n[' + name + ']\n' + jsonToTOML(value, name);
+            });
+            return out;
+        }
+
+        function stripTomlComment(line) {
+            let inStr = false;
+            let quote = '';
+            for (let i = 0; i < line.length; i++) {
+                const c = line[i];
+                if (inStr) {
+                    if (c === quote && line[i - 1] !== '\\') inStr = false;
+                } else if (c === '"' || c === "'") {
+                    inStr = true;
+                    quote = c;
+                } else if (c === '#') {
+                    return line.slice(0, i).trim();
+                }
+            }
+            return line;
+        }
+
+        function splitTopLevel(str, delim) {
+            const parts = [];
+            let depth = 0;
+            let inStr = false;
+            let quote = '';
+            let current = '';
+            for (let i = 0; i < str.length; i++) {
+                const c = str[i];
+                if (inStr) {
+                    current += c;
+                    if (c === quote && str[i - 1] !== '\\') inStr = false;
+                } else if (c === '"' || c === "'") {
+                    inStr = true;
+                    quote = c;
+                    current += c;
+                } else if (c === '[' || c === '{') {
+                    depth++;
+                    current += c;
+                } else if (c === ']' || c === '}') {
+                    depth--;
+                    current += c;
+                } else if (c === delim && depth === 0) {
+                    parts.push(current);
+                    current = '';
+                } else {
+                    current += c;
+                }
+            }
+            if (current !== '') parts.push(current);
+            return parts;
+        }
+
+        function parseTOMLValue(raw) {
+            if (raw.length >= 2 && ((raw[0] === '"' && raw[raw.length - 1] === '"') || (raw[0] === "'" && raw[raw.length - 1] === "'"))) {
+                if (raw[0] === '"') return JSON.parse(raw);
+                return raw.slice(1, -1);
+            }
+            if (raw === 'true') return true;
+            if (raw === 'false') return false;
+            if (raw[0] === '[' && raw[raw.length - 1] === ']') {
+                const inner = raw.slice(1, -1).trim();
+                if (!inner) return [];
+                return splitTopLevel(inner, ',').map(s => parseTOMLValue(s.trim()));
+            }
+            if (raw[0] === '{' && raw[raw.length - 1] === '}') {
+                const inner = raw.slice(1, -1).trim();
+                const obj = {};
+                if (inner) splitTopLevel(inner, ',').forEach(pair => {
+                    const i = pair.indexOf('=');
+                    if (i === -1) throw new Error('Invalid inline table: ' + pair);
+                    obj[pair.slice(0, i).trim()] = parseTOMLValue(pair.slice(i + 1).trim());
+                });
+                return obj;
+            }
+            if (/^[+-]?\d+$/.test(raw)) return parseInt(raw, 10);
+            if (/^[+-]?(\d+\.\d*|\.\d+)([eE][+-]?\d+)?$/.test(raw)) return parseFloat(raw);
+            throw new Error('Cannot parse TOML value: ' + raw);
+        }
+
+        function parseTOML(toml) {
+            const result = {};
+            let current = result;
+            toml.split('\n').forEach((rawLine, idx) => {
+                let line = rawLine.trim();
+                if (!line || line[0] === '#') return;
+                line = stripTomlComment(line);
+                if (!line) return;
+                if (line[0] === '[' && line[line.length - 1] === ']') {
+                    const path = line.slice(1, -1).trim().split('.');
+                    current = result;
+                    path.forEach(p => {
+                        if (typeof current[p] !== 'object' || current[p] === null) current[p] = {};
+                        current = current[p];
+                    });
+                    return;
+                }
+                const eq = line.indexOf('=');
+                if (eq === -1) throw new Error('Invalid TOML on line ' + (idx + 1) + ': ' + line);
+                const key = line.slice(0, eq).trim();
+                const raw = line.slice(eq + 1).trim();
+                if (!key || !raw) throw new Error('Invalid TOML on line ' + (idx + 1) + ': ' + line);
+                current[key] = parseTOMLValue(raw);
+            });
+            return result;
+        }
+
+        $('convertBtn').addEventListener('click', convertJSON);
+        $('convertCopyBtn').addEventListener('click', () => {
+            if (!$('convertOutput').value) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText($('convertOutput').value).then(() => showToast('Copied to clipboard', 'success'));
+        });
+        $('convertDownloadBtn').addEventListener('click', () => {
+            if (!$('convertOutput').value) { showToast('Nothing to download', 'error'); return; }
+            const blob = new Blob([$('convertOutput').value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'jsonnook-converted.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // === Diff ===
+        function compareDiff() {
+            const inputA = $('diffInputA').value.trim();
+            const inputB = $('diffInputB').value.trim();
+            if (!inputA || !inputB) { showToast('Please enter both JSONs', 'error'); return; }
+            try {
+                const objA = JSON.parse(inputA);
+                const objB = JSON.parse(inputB);
+                const diff = generateDiff(objA, objB);
+                $('diffOutput').innerHTML = diff;
+                showToast('Diff generated', 'success');
+            } catch (e) {
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function generateDiff(objA, objB, path = '') {
+            let html = '';
+            if (JSON.stringify(objA) === JSON.stringify(objB)) {
+                return '<div class="diff-line diff-unchanged">No differences found</div>';
+            }
+            if (typeof objA !== typeof objB) {
+                html += '<div class="diff-line diff-removed">- ' + path + ': ' + JSON.stringify(objA) + '</div>';
+                html += '<div class="diff-line diff-added">+ ' + path + ': ' + JSON.stringify(objB) + '</div>';
+                return html;
+            }
+            if (typeof objA === 'object' && objA !== null && objB !== null) {
+                const keys = new Set([...Object.keys(objA), ...Object.keys(objB)]);
+                keys.forEach(key => {
+                    const newPath = path ? path + '.' + key : key;
+                    if (!(key in objA)) {
+                        html += '<div class="diff-line diff-added">+ ' + newPath + ': ' + JSON.stringify(objB[key]) + '</div>';
+                    } else if (!(key in objB)) {
+                        html += '<div class="diff-line diff-removed">- ' + newPath + ': ' + JSON.stringify(objA[key]) + '</div>';
+                    } else {
+                        html += generateDiff(objA[key], objB[key], newPath);
+                    }
+                });
+                return html;
+            }
+            if (objA !== objB) {
+                html += '<div class="diff-line diff-removed">- ' + path + ': ' + JSON.stringify(objA) + '</div>';
+                html += '<div class="diff-line diff-added">+ ' + path + ': ' + JSON.stringify(objB) + '</div>';
+            }
+            return html;
+        }
+
+        $('diffBtn').addEventListener('click', compareDiff);
+        $('diffSwapBtn').addEventListener('click', () => {
+            const temp = $('diffInputA').value;
+            $('diffInputA').value = $('diffInputB').value;
+            $('diffInputB').value = temp;
+        });
+        $('diffClearBtn').addEventListener('click', () => {
+            $('diffInputA').value = '';
+            $('diffInputB').value = '';
+            $('diffOutput').innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>No Diff Yet</h3><p>Paste two JSONs and click "Compare"</p></div>';
+        });
+
+        // === JSON Path ===
+        function queryJSONPath() {
+            const jsonInput = $('jsonpathJson').value.trim();
+            const path = $('jsonpathInput').value.trim();
+            if (!jsonInput) { showToast('Please enter JSON first', 'error'); return; }
+            if (!path) { showToast('Please enter a JSON Path expression', 'error'); return; }
+            try {
+                const parsed = JSON.parse(jsonInput);
+                const result = evaluateJSONPath(parsed, path);
+                $('jsonpathOutput').innerHTML = '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                showToast('Query executed', 'success');
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        function evaluateJSONPath(obj, path) {
+            // Simple JSON Path evaluator
+            if (path === '$') return obj;
+            if (path.startsWith('$.')) {
+                const parts = path.substring(2).split('.');
+                let current = obj;
+                for (const part of parts) {
+                    if (current === null || current === undefined) return undefined;
+                    // Handle array index
+                    const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/);
+                    if (arrayMatch) {
+                        const key = arrayMatch[1];
+                        const index = parseInt(arrayMatch[2]);
+                        current = current[key] ? current[key][index] : undefined;
+                    } else if (part.endsWith('[*]')) {
+                        const key = part.slice(0, -3);
+                        current = current[key];
+                    } else {
+                        current = current[part];
+                    }
+                }
+                return current;
+            }
+            return undefined;
+        }
+
+        $('jsonpathBtn').addEventListener('click', queryJSONPath);
+        $('jsonpathCopyBtn').addEventListener('click', () => {
+            const output = $('jsonpathOutput').textContent;
+            if (!output) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText(output).then(() => showToast('Copied to clipboard', 'success'));
+        });
+
+        // === Schema Generator ===
+        function generateSchema() {
+            const input = $('schemaInput').value.trim();
+            if (!input) { showToast('Please enter JSON first', 'error'); return; }
+            try {
+                const parsed = JSON.parse(input);
+                const schema = generateJSONSchema(parsed);
+                $('schemaOutput').innerHTML = '<pre>' + JSON.stringify(schema, null, 2) + '</pre>';
+                showToast('Schema generated', 'success');
+            } catch (e) {
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        function generateJSONSchema(obj) {
+            const schema = {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": getSchemaType(obj)
+            };
+            if (obj !== null && typeof obj === 'object' && !Array.isArray(obj)) {
+                schema.properties = {};
+                schema.required = [];
+                for (const key in obj) {
+                    schema.properties[key] = generateJSONSchema(obj[key]);
+                    schema.required.push(key);
+                }
+            }
+            if (Array.isArray(obj)) {
+                if (obj.length > 0) {
+                    schema.items = generateJSONSchema(obj[0]);
+                }
+            }
+            return schema;
+        }
+
+        function getSchemaType(value) {
+            if (value === null) return 'null';
+            if (Array.isArray(value)) return 'array';
+            if (typeof value === 'object') return 'object';
+            if (typeof value === 'string') return 'string';
+            if (typeof value === 'number') return Number.isInteger(value) ? 'integer' : 'number';
+            if (typeof value === 'boolean') return 'boolean';
+            return 'string';
+        }
+
+        $('schemaBtn').addEventListener('click', generateSchema);
+        $('schemaCopyBtn').addEventListener('click', () => {
+            const output = $('schemaOutput').textContent;
+            if (!output) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText(output).then(() => showToast('Copied to clipboard', 'success'));
+        });
+        $('schemaDownloadBtn').addEventListener('click', () => {
+            const output = $('schemaOutput').textContent;
+            if (!output) { showToast('Nothing to download', 'error'); return; }
+            const blob = new Blob([output], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'jsonnook-schema.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // === JWT Decoder ===
+        function base64UrlDecode(str) {
+            let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4) b64 += '=';
+            const binary = atob(b64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }
+
+        function decodeJWT() {
+            const token = $('jwtInput').value.trim();
+            if (!token) { showToast('Please enter a JWT', 'error'); return; }
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) throw new Error('JWT must have 3 parts separated by dots');
+                const header = JSON.parse(base64UrlDecode(parts[0]));
+                const payload = JSON.parse(base64UrlDecode(parts[1]));
+                $('jwtHeader').innerHTML = '<pre>' + JSON.stringify(header, null, 2) + '</pre>';
+                $('jwtPayload').innerHTML = '<pre>' + JSON.stringify(payload, null, 2) + '</pre>';
+                let info = 'Signature: <code>' + escapeHtml(parts[2].slice(0, 24)) + '…</code> (decoded, not verified)';
+                if (payload.exp) {
+                    const exp = new Date(payload.exp * 1000);
+                    info += '<br>Expires: ' + exp.toLocaleString() + ' — ' + (exp > new Date() ? '✅ valid' : '⛔ expired');
+                }
+                if (payload.iat) info += '<br>Issued at: ' + new Date(payload.iat * 1000).toLocaleString();
+                $('jwtInfo').innerHTML = info;
+                showToast('JWT decoded (signature not verified)', 'success');
+            } catch (e) {
+                showToast('Invalid JWT: ' + e.message, 'error');
+            }
+        }
+
+        $('jwtDecodeBtn').addEventListener('click', decodeJWT);
+        $('jwtSampleBtn').addEventListener('click', () => {
+            $('jwtInput').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+            showToast('Sample JWT loaded', 'info');
+        });
+        $('jwtClearBtn').addEventListener('click', () => {
+            $('jwtInput').value = '';
+            $('jwtHeader').textContent = '—';
+            $('jwtPayload').textContent = '—';
+            $('jwtInfo').textContent = '—';
+        });
+
+        // === Base64 ===
+        function b64EncodeText(str) {
+            const bytes = new TextEncoder().encode(str);
+            let binary = '';
+            bytes.forEach(b => binary += String.fromCharCode(b));
+            return btoa(binary);
+        }
+
+        function b64DecodeText(b64) {
+            const binary = atob(b64.trim());
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return new TextDecoder().decode(bytes);
+        }
+
+        $('b64EncodeBtn').addEventListener('click', () => {
+            const input = $('b64Text').value;
+            if (!input) { showToast('Please enter text to encode', 'error'); return; }
+            try {
+                $('b64Output').value = b64EncodeText(input);
+                showToast('Encoded to Base64', 'success');
+            } catch (e) { showToast('Encode error: ' + e.message, 'error'); }
+        });
+        $('b64DecodeBtn').addEventListener('click', () => {
+            const input = $('b64Output').value.trim();
+            if (!input) { showToast('Please enter Base64 to decode', 'error'); return; }
+            try {
+                $('b64Text').value = b64DecodeText(input);
+                showToast('Decoded from Base64', 'success');
+            } catch (e) { showToast('Invalid Base64: ' + e.message, 'error'); }
+        });
+        $('b64CopyBtn').addEventListener('click', () => {
+            const out = $('b64Output').value || $('b64Text').value;
+            if (!out) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText(out).then(() => showToast('Copied to clipboard', 'success'));
+        });
+        $('b64ClearBtn').addEventListener('click', () => {
+            $('b64Text').value = '';
+            $('b64Output').value = '';
+        });
+
+        // === Hash Generator (Web Crypto — needs HTTPS or localhost) ===
+        async function hashText() {
+            const input = $('hashInput').value;
+            if (!input) { showToast('Please enter text to hash', 'error'); return; }
+            if (!window.crypto || !crypto.subtle) {
+                showToast('Web Crypto needs HTTPS or localhost — host the file to use hashing', 'error');
+                return;
+            }
+            try {
+                const algo = $('hashAlgo').value;
+                const digest = await crypto.subtle.digest(algo, new TextEncoder().encode(input));
+                $('hashOutput').value = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+                showToast('Hashed with ' + algo, 'success');
+            } catch (e) { showToast('Hash error: ' + e.message, 'error'); }
+        }
+
+        $('hashBtn').addEventListener('click', hashText);
+        $('hashCopyBtn').addEventListener('click', () => {
+            if (!$('hashOutput').value) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText($('hashOutput').value).then(() => showToast('Copied to clipboard', 'success'));
+        });
+
+        // === UUID Generator ===
+        function genUUID() {
+            if (crypto.randomUUID) return crypto.randomUUID();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+        }
+
+        function generateUUIDs() {
+            const count = Math.min(Math.max(parseInt($('uuidCount').value) || 1, 1), 100);
+            const out = [];
+            for (let i = 0; i < count; i++) out.push(genUUID());
+            $('uuidOutput').value = out.join('\n');
+            showToast(count + ' UUID(s) generated', 'success');
+        }
+
+        $('uuidBtn').addEventListener('click', generateUUIDs);
+        $('uuidCopyBtn').addEventListener('click', () => {
+            if (!$('uuidOutput').value) { showToast('Nothing to copy', 'error'); return; }
+            navigator.clipboard.writeText($('uuidOutput').value).then(() => showToast('Copied to clipboard', 'success'));
+        });
+
+        // === Timestamp Converter ===
+        function tsNow() {
+            const now = new Date();
+            $('tsNowOutput').innerHTML = 'Unix: <b>' + Math.floor(now.getTime() / 1000) + '</b> &nbsp; ms: ' + now.getTime() + '<br>ISO: ' + now.toISOString() + '<br>Local: ' + now.toLocaleString();
+        }
+
+        function unixToDate() {
+            const raw = $('tsUnixInput').value.trim();
+            if (!raw) { showToast('Please enter a Unix timestamp', 'error'); return; }
+            const num = Number(raw);
+            if (isNaN(num)) { showToast('Not a number', 'error'); return; }
+            // Accept seconds (10 digits) or milliseconds (13 digits)
+            const ms = raw.replace('-', '').length > 11 ? num : num * 1000;
+            const d = new Date(ms);
+            if (isNaN(d.getTime())) { showToast('Invalid timestamp', 'error'); return; }
+            $('tsUnixOutput').innerHTML = 'ISO: ' + d.toISOString() + '<br>Local: ' + d.toLocaleString() + '<br>UTC: ' + d.toUTCString();
+        }
+
+        function dateToUnix() {
+            const raw = $('tsDateInput').value.trim();
+            if (!raw) { showToast('Please enter a date', 'error'); return; }
+            const d = new Date(raw);
+            if (isNaN(d.getTime())) { showToast('Invalid date — try 2025-09-01T00:00:00Z', 'error'); return; }
+            $('tsDateOutput').innerHTML = 'Unix: <b>' + Math.floor(d.getTime() / 1000) + '</b> &nbsp; ms: ' + d.getTime();
+        }
+
+        $('tsNowBtn').addEventListener('click', tsNow);
+        $('tsUnixBtn').addEventListener('click', unixToDate);
+        $('tsDateBtn').addEventListener('click', dateToUnix);
+
+        // === Snippets ===
+        function saveSnippet() {
+            const name = $('snippetName').value.trim();
+            const content = inputEditor.value.trim();
+            if (!name) { showToast('Please enter a snippet name', 'error'); return; }
+            if (!content) { showToast('No content to save', 'error'); return; }
+            const snippet = {
+                id: Date.now(),
+                name: name,
+                content: content,
+                date: new Date().toLocaleDateString()
+            };
+            savedSnippets.unshift(snippet);
+            localStorage.setItem('jsonnook_snippets', JSON.stringify(savedSnippets));
+            $('snippetName').value = '';
+            renderSnippets();
+            showToast('Snippet saved', 'success');
+        }
+
+        function renderSnippets() {
+            const list = $('snippetList');
+            if (savedSnippets.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">💾</div><h3>No Saved Snippets</h3><p>Save your current JSON to access it later</p></div>';
+                return;
+            }
+            list.innerHTML = savedSnippets.map(s => `
+                <div class="snippet-item" data-id="${s.id}">
+                    <div>
+                        <div class="snippet-name">${escapeHtml(s.name)}</div>
+                        <div class="snippet-date">${s.date}</div>
+                    </div>
+                    <div class="snippet-actions">
+                        <button class="btn btn-sm" onclick="loadSnippet(${s.id})">Load</button>
+                        <button class="btn btn-sm" onclick="deleteSnippet(${s.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadSnippet(id) {
+            const snippet = savedSnippets.find(s => s.id === id);
+            if (snippet) {
+                inputEditor.value = snippet.content;
+                updateStats();
+                showToast('Snippet loaded', 'success');
+            }
+        }
+
+        function deleteSnippet(id) {
+            savedSnippets = savedSnippets.filter(s => s.id !== id);
+            localStorage.setItem('jsonnook_snippets', JSON.stringify(savedSnippets));
+            renderSnippets();
+            showToast('Snippet deleted', 'success');
+        }
+
+        $('saveSnippetBtn').addEventListener('click', saveSnippet);
+        $('clearAllSnippetsBtn').addEventListener('click', () => {
+            if (confirm('Delete all saved snippets?')) {
+                savedSnippets = [];
+                localStorage.removeItem('jsonnook_snippets');
+                renderSnippets();
+                showToast('All snippets cleared', 'success');
+            }
+        });
+
+        // === Input listener ===
+        inputEditor.addEventListener('input', updateStats);
+
+        // === Keyboard shortcuts ===
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentTool === 'formatter') formatJSON();
+                    else if (currentTool === 'tree') generateTree();
+                    else if (currentTool === 'converter') convertJSON();
+                    else if (currentTool === 'diff') compareDiff();
+                    else if (currentTool === 'jsonpath') queryJSONPath();
+                    else if (currentTool === 'schema') generateSchema();
+                    else if (currentTool === 'jwt') decodeJWT();
+                    else if (currentTool === 'hash') hashText();
+                    else if (currentTool === 'uuid') generateUUIDs();
+                    else if (currentTool === 'timestamp') tsNow();
+                }
+                if (e.key === 's') {
+                    e.preventDefault();
+                    if (currentTool === 'snippets') saveSnippet();
+                }
+            }
+        });
+
+        // === Init ===
+        renderSnippets();
+        updateStats();
+        tsNow();
+        // Offline support via service worker (only works over http/https, not file://)
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
