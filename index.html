@@ -3,8 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSONNook — Your JSON Workspace</title>
-    <meta name="description" content="Format, validate, convert, diff, and query JSON — all in one place. 100% client-side, private, free.">
+    <title>JSON Formatter & Validator Online — Free JSON Toolkit | JSONNook</title>
+    <meta name="description" content="Free online JSON formatter, validator, minifier, tree viewer, converter (YAML/TOML/CSV), diff checker, JSONPath tester, schema generator, JWT decoder, Base64, hash & UUID tools. 100% client-side, private, no signup.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://glennree318-netizen.github.io/jsonnook/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="JSONNook">
+    <meta property="og:title" content="JSONNook — Free Online JSON Formatter, Validator & Toolkit">
+    <meta property="og:description" content="Format, validate, convert, diff and query JSON — all in one fast, private, client-side workspace. Free forever, no signup.">
+    <meta property="og:url" content="https://glennree318-netizen.github.io/jsonnook/">
+    <meta property="og:image" content="https://glennree318-netizen.github.io/jsonnook/icon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="JSONNook — Free Online JSON Formatter, Validator & Toolkit">
+    <meta name="twitter:description" content="Format, validate, convert, diff and query JSON — all in one fast, private, client-side workspace. Free forever, no signup.">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "JSONNook",
+      "url": "https://glennree318-netizen.github.io/jsonnook/",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": "JSON formatter, JSON validator, JSON minifier, JSON tree viewer, JSON to YAML converter, JSON to TOML converter, JSON to CSV converter, JSON diff checker, JSONPath tester, JSON schema generator, JWT decoder, Base64 encoder decoder, hash generator, UUID generator, timestamp converter"
+    }
+    </script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪺</text></svg>">
     <meta name="theme-color" content="#0d1117">
     <link rel="manifest" href="manifest.json">
@@ -15,8 +38,18 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
         .header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
-        .logo{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;color:var(--text);text-decoration:none}
-        .logo span{color:var(--accent)}
+        .logo{margin:0;font-size:18px;font-weight:700}
+        .logo a{color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+        .logo a span{color:var(--accent)}
+        dialog{background:var(--bg2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:640px;width:calc(100vw - 40px);max-height:80vh;overflow:auto}
+        dialog::backdrop{background:rgba(0,0,0,.6)}
+        .dialog-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        #aboutDialog h2{font-size:18px}
+        #aboutDialog h3{font-size:15px;margin:16px 0 8px}
+        #aboutDialog p,#aboutDialog li{font-size:14px;line-height:1.7}
+        #aboutDialog ul{padding-left:20px}
+        #aboutDialog details{margin-bottom:8px;border:1px solid var(--border);border-radius:8px;padding:8px 12px}
+        #aboutDialog summary{cursor:pointer;font-weight:600;font-size:14px}
         .header-actions{display:flex;gap:8px;align-items:center}
         .btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;transition:all var(--transition);display:flex;align-items:center;gap:6px}
         .btn:hover{background:var(--border)}
@@ -106,8 +139,9 @@
 </head>
 <body>
     <header class="header">
-        <a class="logo" href="#">🪺 JSON<span>Nook</span></a>
+        <h1 class="logo"><a href="#">🪺 JSON<span>Nook</span></a></h1>
         <div class="header-actions">
+            <button class="btn btn-sm" id="aboutBtn" title="About JSONNook">ℹ️ About</button>
             <button class="btn btn-sm" id="themeToggle" title="Toggle theme">🌙</button>
         </div>
     </header>
@@ -388,6 +422,44 @@
             <div class="status-item"><span>🪺 JSONNook v1.0</span></div>
         </div>
     </footer>
+    <dialog id="aboutDialog">
+        <div class="dialog-head">
+            <h2>🪺 About JSONNook</h2>
+            <button class="btn btn-sm" id="aboutClose">✕ Close</button>
+        </div>
+        <p><strong>JSONNook</strong> is a free online <strong>JSON formatter, validator and developer toolkit</strong>. Format and minify JSON, explore it in a collapsible tree view, convert between JSON, YAML, TOML and CSV, compare two payloads with the JSON diff checker, test JSONPath queries, generate JSON Schema, decode JWTs, encode Base64, hash text, generate UUIDs and convert timestamps — all in one fast workspace, with no signup and no server.</p>
+        <h3>Tools included</h3>
+        <ul>
+            <li><strong>JSON Formatter & Validator</strong> — pretty-print, minify, validate with error messages, sort keys</li>
+            <li><strong>JSON Tree Viewer</strong> — collapsible, syntax-highlighted exploration of large payloads</li>
+            <li><strong>JSON Converter</strong> — JSON ↔ YAML, JSON ↔ TOML, JSON ↔ CSV</li>
+            <li><strong>JSON Diff</strong> — compare expected vs actual API responses side by side</li>
+            <li><strong>JSONPath Tester</strong> — build and verify expressions for assertions and data extraction</li>
+            <li><strong>JSON Schema Generator</strong> — create a draft-07 schema from any sample JSON</li>
+            <li><strong>JWT Decoder, Base64, Hash, UUID & Timestamp tools</strong> — everyday developer utilities</li>
+        </ul>
+        <h3>Frequently asked questions</h3>
+        <details>
+            <summary>Is my JSON data private?</summary>
+            <p>Yes. JSONNook runs 100% client-side in your browser. Your data is never uploaded, stored or tracked — you can even disconnect from the internet after the first load and keep working.</p>
+        </details>
+        <details>
+            <summary>Do I need an account or signup?</summary>
+            <p>No. Every tool is free and works instantly with no account. Saved snippets are stored only in your own browser (localStorage).</p>
+        </details>
+        <details>
+            <summary>Does JSONNook work offline?</summary>
+            <p>Yes. JSONNook is an installable PWA with a service worker, so it keeps working offline after your first visit.</p>
+        </details>
+        <details>
+            <summary>Which formats can I convert JSON to?</summary>
+            <p>YAML, TOML and CSV — in both directions. Nested objects become TOML tables or YAML mappings automatically.</p>
+        </details>
+        <details>
+            <summary>Is JSONNook really free?</summary>
+            <p>Yes — all 12 tools are free forever. Power-user workflow features may arrive later, but the core toolkit will always stay free.</p>
+        </details>
+    </dialog>
     <div class="toast-container" id="toastContainer"></div>
     <script>
         // === State ===
@@ -1445,6 +1517,13 @@
                     if (currentTool === 'snippets') saveSnippet();
                 }
             }
+        });
+
+        // === About dialog ===
+        $('aboutBtn').addEventListener('click', () => $('aboutDialog').showModal());
+        $('aboutClose').addEventListener('click', () => $('aboutDialog').close());
+        $('aboutDialog').addEventListener('click', (e) => {
+            if (e.target === $('aboutDialog')) $('aboutDialog').close();
         });
 
         // === Init ===

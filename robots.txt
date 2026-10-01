@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://glennree318-netizen.github.io/jsonnook/sitemap.xml
