@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://glennree318-netizen.github.io/jsonnook/sitemap.xml
+Sitemap: https://jsonnook.vercel.app/sitemap.xml
