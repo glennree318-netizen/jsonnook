@@ -1,7 +1,7 @@
 # 🪺 JSONNook — Your JSON Workspace
 
 Format, validate, convert, diff, and query JSON — all in one place.
-**100% client-side. No backend. No tracking. Free forever.**
+**100% client-side. No backend. No uploads. Free forever.**
 
 ## ✨ Tools included
 
@@ -22,7 +22,12 @@ Format, validate, convert, diff, and query JSON — all in one place.
 
 ## 🔒 Privacy
 
-Your data never leaves your browser. No server, no analytics, no cookies.
+Your data never leaves your browser. No server, no cookies.
+
+The page loads a small cookieless analytics script (Umami) on the production
+hostname only, to count visits. It sets no cookies, builds no profile, and never
+sees your JSON, because all formatting, validation and querying happens locally.
+Load the page once and use it offline and nothing is sent at all.
 
 ## 📲 PWA
 
